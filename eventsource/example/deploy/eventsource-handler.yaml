@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eventsource-handler
+  labels:
+    app: eventsourcehandler
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: eventsourcehandler
+  template:
+    metadata:
+      labels:
+        app: eventsourcehandler
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "eventsource-handler"
+        dapr.io/app-port: "5050"
+        dapr.io/log-as-json: "true"
+        dapr.io/app-protocol: "grpc"
+    spec:
+      containers:
+        - name: handler
+          image: openfunctiondev/eventsource-handler:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: CONFIG
+              value: "eyJzb3VyY2VDb21wb25lbnROYW1lIjoia2Fma2EtZXZlbnRzb3VyY2UiLCJidXNDb25maWdzIjpbeyJidXNDb21wb25lbnROYW1lIjoibmF0cy1ldmVudGJ1cyIsImJ1c1RvcGljIjoidG9waWMxIn1dLCJzaW5rQ29tcG9uZW50TmFtZSI6Imh0dHAtc2luayIsInBvcnQiOiI1MDUwIn0="

@@ -1,0 +1,18 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: kafka-eventsource
+spec:
+  metadata:
+    - name: brokers
+      value: dapr-kafka.kafka:9092
+    - name: topics
+      value: sample
+    - name: consumerGroup
+      value: group1
+    - name: publishTopic
+      value: sample
+    - name: authRequired
+      value: "false"
+  type: bindings.kafka
+  version: v1
