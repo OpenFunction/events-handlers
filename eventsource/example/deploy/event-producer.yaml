@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: event-producer
+  labels:
+    app: eventproducer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: eventproducer
+  template:
+    metadata:
+      labels:
+        app: eventproducer
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "event-producer"
+        dapr.io/log-as-json: "true"
+    spec:
+      containers:
+        - name: producer
+          image: event-producer:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: TARGET_NAME
+              value: "kafka-eventsource"
