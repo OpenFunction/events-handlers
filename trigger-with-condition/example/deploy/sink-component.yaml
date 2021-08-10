@@ -1,0 +1,11 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: http-sink
+spec:
+  type: bindings.http
+  version: v1
+  metadata:
+    - name: url
+      # This is the access address of a Knative Service
+      value: http://function-sample-serving-ksvc.default.192.168.0.5.sslip.io

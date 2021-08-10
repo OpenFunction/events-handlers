@@ -1,26 +1,26 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: event-producer
+  name: events-producer
   labels:
-    app: eventproducer
+    app: eventsproducer
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: eventproducer
+      app: eventsproducer
   template:
     metadata:
       labels:
-        app: eventproducer
+        app: eventsproducer
       annotations:
         dapr.io/enabled: "true"
-        dapr.io/app-id: "event-producer"
+        dapr.io/app-id: "events-producer"
         dapr.io/log-as-json: "true"
     spec:
       containers:
         - name: producer
-          image: event-producer:latest
+          image: openfunctiondev/events-producer:latest
           imagePullPolicy: IfNotPresent
           env:
             - name: TARGET_NAME

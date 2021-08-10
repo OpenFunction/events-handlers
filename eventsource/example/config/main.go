@@ -6,30 +6,20 @@ import (
 	"fmt"
 )
 
-type SourceEnvConfig struct {
-	SourceComponentName string      `json:"sourceComponentName"`
-	SourceTopic         string      `json:"sourceTopic,omitempty"`
-	BusConfigs          []BusConfig `json:"busConfigs,omitempty"`
-	SinkComponentName   string      `json:"sinkComponentName,omitempty"`
-	Port                string      `json:"port,omitempty"`
-}
-
-type BusConfig struct {
-	BusComponentName string `json:"busComponentName"`
-	BusTopic         string `json:"busTopic"`
+type EventSourceConfig struct {
+	EventSourceComponentName string `json:"eventSourceComponentName"`
+	EventSourceTopic         string `json:"eventSourceTopic,omitempty"`
+	EventBusComponentName    string `json:"eventBusComponentName,omitempty"`
+	EventBusTopic            string `json:"eventBusTopic,omitempty"`
+	SinkComponentName        string `json:"sinkComponentName,omitempty"`
 }
 
 func main() {
-	ec := &SourceEnvConfig{}
+	ec := &EventSourceConfig{}
 	ec.SinkComponentName = "http-sink"
-	ec.Port = "5050"
-	ec.SourceComponentName = "kafka-eventsource"
-
-	defaultEventBus := &BusConfig{}
-	defaultEventBus.BusComponentName = "nats-eventbus"
-	defaultEventBus.BusTopic = "topic1"
-
-	ec.BusConfigs = append(ec.BusConfigs, *defaultEventBus)
+	ec.EventBusComponentName = "nats-eventbus"
+	ec.EventBusTopic = "topic1"
+	ec.EventSourceComponentName = "kafka-eventsource"
 
 	ecBytes, err := json.Marshal(ec)
 	if err != nil {
