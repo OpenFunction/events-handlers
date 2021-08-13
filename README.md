@@ -8,3 +8,12 @@ The reason for making event handlers standalone repo's is that they can be made 
 
 ## EventSource Handler
 
+You can refer to [this docs](https://github.com/OpenFunction/OpenFunction/blob/main/docs/concepts/OpenFunction-events-framework.md#eventsource) to learn more about **EventSource**.
+
+If you want to know how to use this handler, please refer to [this docs](eventsource) .
+
+## Trigger Handler
+
+You can refer to [this docs](https://github.com/OpenFunction/OpenFunction/blob/main/docs/concepts/OpenFunction-events-framework.md#trigger) to learn more about **Trigger**.
+
+If you want to know how to use this handler, please refer to [this docs](trigger-with-condition) .

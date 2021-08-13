@@ -86,8 +86,7 @@ It can be observed that the target function has been triggered.
 ```shell
 ~# kubectl get po
 NAME                                                            READY   STATUS    RESTARTS   AGE
-event-producer-6b4c9b9d76-dzjxp                                 2/2     Running   0          24s
-eventsource-handler-bb65bf98b-sm6bl                             2/2     Running   0          24s
-function-sample-serving-ksvc-v100-deployment-5647d775f6-d8zfs   2/2     Running   0          16s
+events-producer-bf8cd85d7-ghp2v                                 2/2     Running   2          41s
+function-sample-serving-ksvc-v100-deployment-5647d775f6-4qmk4   2/2     Running   0          21s
+trigger-784cf4cb-rvkrh                                          2/2     Running   0          41s
 ```
-
