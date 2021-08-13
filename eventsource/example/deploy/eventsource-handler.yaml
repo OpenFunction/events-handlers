@@ -21,9 +21,9 @@ spec:
         dapr.io/app-protocol: "grpc"
     spec:
       containers:
-        - name: handler
-          image: openfunctiondev/eventsource-handler:latest
+        - name: eventsource
+          image: eventsource-handler:latest
           imagePullPolicy: IfNotPresent
           env:
             - name: CONFIG
-              value: "eyJzb3VyY2VDb21wb25lbnROYW1lIjoia2Fma2EtZXZlbnRzb3VyY2UiLCJidXNDb25maWdzIjpbeyJidXNDb21wb25lbnROYW1lIjoibmF0cy1ldmVudGJ1cyIsImJ1c1RvcGljIjoidG9waWMxIn1dLCJzaW5rQ29tcG9uZW50TmFtZSI6Imh0dHAtc2luayIsInBvcnQiOiI1MDUwIn0="
+              value: "eyJldmVudFNvdXJjZUNvbXBvbmVudE5hbWUiOiJrYWZrYS1ldmVudHNvdXJjZSIsImV2ZW50QnVzQ29tcG9uZW50TmFtZSI6Im5hdHMtZXZlbnRidXMiLCJldmVudEJ1c1RvcGljIjoidG9waWMxIiwic2lua0NvbXBvbmVudE5hbWUiOiJodHRwLXNpbmsifQ=="

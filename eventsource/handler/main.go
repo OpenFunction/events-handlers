@@ -15,21 +15,17 @@ import (
 )
 
 var (
-	config SourceEnvConfig
+	config EventSourceConfig
 	client dapr.Client
 )
 
-type SourceEnvConfig struct {
-	SourceComponentName string      `json:"sourceComponentName"`
-	SourceTopic         string      `json:"sourceTopic,omitempty"`
-	BusConfigs          []BusConfig `json:"busConfigs,omitempty"`
-	SinkComponentName   string      `json:"sinkComponentName,omitempty"`
-	Port                string      `json:"port,omitempty"`
-}
-
-type BusConfig struct {
-	BusComponentName string `json:"busComponentName"`
-	BusTopic         string `json:"busTopic"`
+type EventSourceConfig struct {
+	EventSourceComponentName string `json:"eventSourceComponentName"`
+	EventSourceTopic         string `json:"eventSourceTopic,omitempty"`
+	EventBusComponentName    string `json:"eventBusComponentName,omitempty"`
+	EventBusTopic            string `json:"eventBusTopic,omitempty"`
+	SinkComponentName        string `json:"sinkComponentName,omitempty"`
+	Port                     string `json:"port,omitempty"`
 }
 
 func init() {
@@ -44,7 +40,7 @@ func init() {
 		}
 	}
 
-	if config.SourceComponentName == "" {
+	if config.EventSourceComponentName == "" {
 		log.Fatal("event source cannot be none")
 	}
 
@@ -68,20 +64,20 @@ func main() {
 	defer client.Close()
 
 	sub := &common.Subscription{}
-	if config.SourceTopic != "" {
+	if config.EventSourceTopic != "" {
 		// add some topic subscriptions
-		sub.PubsubName = config.SourceComponentName
-		sub.Topic = config.SourceTopic
+		sub.PubsubName = config.EventSourceComponentName
+		sub.Topic = config.EventSourceTopic
 
 		// add a binding invocation handler
 		if err = s.AddTopicEventHandler(sub, eventSourceTopicHandler); err != nil {
 			log.Fatalf("error adding topic subscription: %v", err)
 		}
-	}
-
-	// add a binding invocation handler
-	if err = s.AddBindingInvocationHandler(config.SourceComponentName, eventSourceBindingsHandler); err != nil {
-		log.Fatalf("error adding binding handler: %v", err)
+	} else {
+		// add a binding invocation handler
+		if err = s.AddBindingInvocationHandler(config.EventSourceComponentName, eventSourceBindingsHandler); err != nil {
+			log.Fatalf("error adding binding handler: %v", err)
+		}
 	}
 
 	// start the server
@@ -97,6 +93,7 @@ func eventSourceBindingsHandler(ctx context.Context, in *common.BindingEvent) ([
 		log.Fatal("client is not available")
 	}
 
+	var ret []byte
 	if config.SinkComponentName != "" {
 		// send the input data to sink
 		msg := &dapr.InvokeBindingRequest{
@@ -112,16 +109,16 @@ func eventSourceBindingsHandler(ctx context.Context, in *common.BindingEvent) ([
 			panic(err)
 		}
 		log.Printf("eventsource - Response - Data: %s, Meta: %v", response.Data, response.Metadata)
-		return response.Data, nil
-	} else {
-		for _, ebConfig := range config.BusConfigs {
-			if err := client.PublishEvent(ctx, ebConfig.BusComponentName, ebConfig.BusTopic, in.Data); err != nil {
-				panic(err)
-			}
-			log.Printf("eventsource - Send to EventBus - PubsubName: %s, Topic: %s, Data: %s", ebConfig.BusComponentName, ebConfig.BusTopic, in.Data)
-		}
+		ret = response.Data
 	}
-	return nil, nil
+
+	if config.EventBusComponentName != "" {
+		if err := client.PublishEvent(ctx, config.EventBusComponentName, config.EventBusTopic, in.Data); err != nil {
+			panic(err)
+		}
+		log.Printf("eventsource - Send to EventBus - PubsubName: %s, Topic: %s, Data: %s", config.EventBusComponentName, config.EventBusTopic, in.Data)
+	}
+	return ret, nil
 }
 
 func eventSourceTopicHandler(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
@@ -146,13 +143,13 @@ func eventSourceTopicHandler(ctx context.Context, e *common.TopicEvent) (retry b
 		}
 		log.Printf("eventsource - Response - Data: %s, Meta: %v", response.Data, response.Metadata)
 		return false, nil
-	} else {
-		for _, ebConfig := range config.BusConfigs {
-			if err := client.PublishEventfromCustomContent(ctx, ebConfig.BusComponentName, ebConfig.BusTopic, e.Data); err != nil {
-				panic(err)
-			}
-			log.Printf("eventsource - Send to EventBus - PubsubName: %s, Topic: %s, Data: %s", ebConfig.BusComponentName, ebConfig.BusTopic, e.Data)
+	}
+
+	if config.EventBusComponentName != "" {
+		if err := client.PublishEventfromCustomContent(ctx, config.EventBusComponentName, config.EventBusTopic, e.Data); err != nil {
+			panic(err)
 		}
+		log.Printf("eventsource - Send to EventBus - PubsubName: %s, Topic: %s, Data: %s", config.EventBusComponentName, config.EventBusTopic, e.Data)
 	}
 	return false, nil
 }
