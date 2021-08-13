@@ -90,4 +90,3 @@ events-producer-bf8cd85d7-ghp2v                                 2/2     Running 
 function-sample-serving-ksvc-v100-deployment-5647d775f6-4qmk4   2/2     Running   0          21s
 trigger-784cf4cb-rvkrh                                          2/2     Running   0          41s
 ```
-
