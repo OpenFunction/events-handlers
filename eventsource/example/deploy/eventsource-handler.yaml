@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
         - name: eventsource
-          image: eventsource-handler:latest
+          image: openfunctiondev/eventsource-handler:v1
           imagePullPolicy: IfNotPresent
           env:
             - name: CONFIG

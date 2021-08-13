@@ -7,33 +7,55 @@ import (
 )
 
 type TriggerEnvConfig struct {
-	BusComponentName string               `json:"busComponentName"`
-	BusTopic         string               `json:"busTopic,omitempty"`
-	Subscribers      []*SubscriberConfigs `json:"subscribers,omitempty"`
-	Port             string               `json:"port,omitempty"`
+	BusComponent string                 `json:"busComponent"`
+	Inputs       []*Input               `json:"busTopic,omitempty"`
+	Subscribers  map[string]*Subscriber `json:"subscribers,omitempty"`
+	Port         string                 `json:"port,omitempty"`
 }
 
-type SubscriberConfigs struct {
-	SinkComponentName           string `json:"sinkComponentName,omitempty"`
-	DeadLetterSinkComponentName string `json:"deadLetterSinkComponentName,omitempty"`
-	TopicName                   string `json:"topicName,omitempty"`
-	DeadLetterTopicName         string `json:"deadLetterTopicName,omitempty"`
+type Input struct {
+	Name        string `json:"name"`
+	Namespace   string `json:"namespace,omitempty"`
+	EventSource string `json:"eventSource"`
+	Event       string `json:"event"`
+}
+
+type Subscriber struct {
+	SinkComponent   string `json:"sinkComponent,omitempty"`
+	DLSinkComponent string `json:"deadLetterSinkComponent,omitempty"`
+	Topic           string `json:"topic,omitempty"`
+	DLTopic         string `json:"deadLetterTopic,omitempty"`
 }
 
 func main() {
 	t := &TriggerEnvConfig{}
-	t.BusComponentName = "trigger"
-	t.BusTopic = "default"
+	t.Subscribers = map[string]*Subscriber{}
+	t.BusComponent = "trigger"
 	t.Port = "5050"
 
-	subA := &SubscriberConfigs{}
-	subA.SinkComponentName = "http-sink"
+	inputA := &Input{
+		Name:        "A",
+		Namespace:   "default",
+		EventSource: "my-eventsource",
+		Event:       "sample-one",
+	}
+	inputB := &Input{
+		Name:        "B",
+		Namespace:   "default",
+		EventSource: "my-eventsource",
+		Event:       "sample-two",
+	}
+	t.Inputs = append(t.Inputs, inputA)
+	t.Inputs = append(t.Inputs, inputB)
 
-	subB := &SubscriberConfigs{}
-	subB.TopicName = "metrics"
+	subA := &Subscriber{}
+	subA.SinkComponent = "http-sink"
 
-	t.Subscribers = append(t.Subscribers, subA)
-	t.Subscribers = append(t.Subscribers, subB)
+	subB := &Subscriber{}
+	subB.Topic = "metrics"
+
+	t.Subscribers["A || B"] = subA
+	t.Subscribers["A && B"] = subB
 
 	tBytes, err := json.Marshal(t)
 	if err != nil {

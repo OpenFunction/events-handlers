@@ -18,6 +18,6 @@ If you want to know how to use this handler, please refer to [this docs](eventso
 
 You can refer to [this docs](https://github.com/OpenFunction/OpenFunction/blob/main/docs/concepts/OpenFunction-events-framework.md#trigger) to learn more about **Trigger**.
 
-If you want to know how to use this handler, please refer to [this docs](trigger-with-condition) .
+If you want to know how to use this handler, please refer to [this docs](trigger) .
 
 - latest image: openfunctiondev/trigger-handler:v1
