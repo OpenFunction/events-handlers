@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
         - name: trigger
-          image: trigger-with-condition:latest
+          image: openfunctiondev/trigger-handler:v1
           imagePullPolicy: IfNotPresent
           env:
             - name: CONFIG
