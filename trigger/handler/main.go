@@ -24,10 +24,10 @@ import (
 )
 
 type TriggerEnvConfig struct {
-	BusComponent string                 `json:"busComponent"`
-	Inputs       []*Input               `json:"busTopic,omitempty"`
-	Subscribers  map[string]*Subscriber `json:"subscribers,omitempty"`
-	Port         string                 `json:"port,omitempty"`
+	EventBusComponent string                 `json:"eventBusComponent"`
+	Inputs            []*Input               `json:"inputs,omitempty"`
+	Subscribers       map[string]*Subscriber `json:"subscribers,omitempty"`
+	Port              string                 `json:"port,omitempty"`
 }
 
 type Input struct {
@@ -44,7 +44,7 @@ type Subscriber struct {
 	DLTopic         string `json:"deadLetterTopic,omitempty"`
 }
 
-type TriggerMgr struct {
+type TriggerManager struct {
 	// key: condition, value: *Subscriber
 	ConditionSubscriberMap *sync.Map
 	// key: topic, value: *InputStatus
@@ -61,10 +61,10 @@ type InputStatus struct {
 }
 
 var (
-	config         TriggerEnvConfig
-	client         dapr.Client
-	triggerManager TriggerMgr
-	mainWaitGroup  sync.WaitGroup
+	config        TriggerEnvConfig
+	client        dapr.Client
+	tMgr          TriggerManager
+	mainWaitGroup sync.WaitGroup
 )
 
 const (
@@ -76,16 +76,16 @@ const (
 func init() {
 	encodedConfig := getEnvVar("CONFIG", "")
 	if len(encodedConfig) > 0 {
-		envConifgSpec, err := base64.StdEncoding.DecodeString(encodedConfig)
+		configSpec, err := base64.StdEncoding.DecodeString(encodedConfig)
 		if err != nil {
 			log.Fatalf("failed to decode config string: %v", err)
 		}
-		if err = json.Unmarshal(envConifgSpec, &config); err != nil {
+		if err = json.Unmarshal(configSpec, &config); err != nil {
 			log.Fatalf("failed to unmarshal config object: %v", err)
 		}
 	}
 
-	if config.BusComponent == "" {
+	if config.EventBusComponent == "" {
 		log.Fatal("eventbus cannot be none")
 	}
 
@@ -93,8 +93,8 @@ func init() {
 		config.Port = "5050"
 	}
 
-	triggerManager = TriggerMgr{}
-	triggerManager.init()
+	tMgr = TriggerManager{}
+	tMgr.init()
 
 	var inputVars []*exprpb.Decl
 
@@ -103,8 +103,8 @@ func init() {
 		topic := in.genTopic()
 
 		// The reset here is equal to the initialization
-		triggerManager.reset(topic, in.Name)
-		triggerManager.TopicEventMap[topic] = make(chan *common.TopicEvent)
+		tMgr.reset(topic, in.Name)
+		tMgr.TopicEventMap[topic] = make(chan *common.TopicEvent)
 		inputVars = append(inputVars, decls.NewVar(in.Name, decls.Bool))
 
 		// We create a goroutine for each topic (input).
@@ -125,32 +125,32 @@ func init() {
 					// Reset the timer because we received a new message.
 					ticker.Reset(ResetTimeInterval * time.Second)
 					// Update the value of the corresponding topic in triggerManager.TopicInputMap.
-					triggerManager.TopicInputMap.Store(topic, &InputStatus{LastMsgTime: time.Now().Unix(), LastEvent: event, Status: true, Name: in.Name})
+					tMgr.TopicInputMap.Store(topic, &InputStatus{LastMsgTime: time.Now().Unix(), LastEvent: event, Status: true, Name: in.Name})
 					// Check if a condition has been satisfied at this point.
 					// If the condition is matched, the corresponding subscriber is obtained and a list (matchSubs) of subscribers matching the above condition is returned.
-					if matchSubs := triggerManager.execCondition(); matchSubs != nil {
+					if matchSubs := tMgr.execCondition(in.Name); matchSubs != nil {
 						// Send event to subscribers according to the configuration in matchSubs.
-						triggerManager.execTrigger(event, matchSubs)
+						tMgr.execTrigger(event, matchSubs)
 					}
 				// When the timer ticker ends
 				case <-ticker.C:
 					// Reset the corresponding state in triggerManager.TopicInputMap,
 					// since the event did not match any condition in ResetTimeInterval.
-					triggerManager.reset(topic, in.Name)
+					tMgr.reset(topic, in.Name)
 					break
 				}
 			}
-		}(triggerManager.TopicEventMap[topic])
+		}(tMgr.TopicEventMap[topic])
 	}
 
 	for condition, subscriber := range config.Subscribers {
-		triggerManager.ConditionSubscriberMap.Store(condition, subscriber)
+		tMgr.ConditionSubscriberMap.Store(condition, subscriber)
 	}
 
 	env, _ := cel.NewEnv(
 		cel.Declarations(inputVars...),
 	)
-	triggerManager.CelEnv = env
+	tMgr.CelEnv = env
 }
 
 func main() {
@@ -174,7 +174,7 @@ func main() {
 		}
 
 		subscription := &common.Subscription{
-			PubsubName: config.BusComponent,
+			PubsubName: config.EventBusComponent,
 			Topic:      fmt.Sprintf(TopicNameTmpl, input.Namespace, input.EventSource, input.Event),
 		}
 
@@ -192,7 +192,7 @@ func main() {
 func triggerHandler(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
 	printEventInfo(e)
 
-	triggerManager.TopicEventMap[e.Topic] <- e
+	tMgr.TopicEventMap[e.Topic] <- e
 	return false, nil
 }
 
@@ -206,7 +206,7 @@ func trigger(ctx context.Context, e *common.TopicEvent, sub *Subscriber) {
 			Data:      e.Data.([]byte),
 		}
 
-		log.Printf("trigger - Send to Sink - Msg: %v", msg)
+		log.Printf("trigger - Send to Sink - ID: %s", e.ID)
 		response, err := client.InvokeBinding(ctx, msg)
 		if err != nil {
 			panic(err)
@@ -214,10 +214,10 @@ func trigger(ctx context.Context, e *common.TopicEvent, sub *Subscriber) {
 		log.Printf("trigger - Response - Data: %s, Meta: %v", response.Data, response.Metadata)
 	}
 	if sub.Topic != "" {
-		if err := client.PublishEventfromCustomContent(ctx, config.BusComponent, sub.Topic, e.Data); err != nil {
+		if err := client.PublishEventfromCustomContent(ctx, config.EventBusComponent, sub.Topic, e.Data); err != nil {
 			panic(err)
 		}
-		log.Printf("trigger - Send to EventBus (filtered topic) - PubsubName: %s, Topic: %s, ID: %s", config.BusComponent, sub.Topic, e.ID)
+		log.Printf("trigger - Send to EventBus (filtered topic) - PubsubName: %s, Topic: %s, ID: %s", config.EventBusComponent, sub.Topic, e.ID)
 	}
 }
 
@@ -257,11 +257,23 @@ func printEventInfo(e *common.TopicEvent) {
 	log.Println("----------------------------------------------")
 }
 
-func (t *TriggerMgr) reset(topic string, input string) {
+func (t *TriggerManager) getTopicOnlyStatus(statuses map[string]interface{}, inputName string) map[string]interface{} {
+	topicStatus := map[string]interface{}{}
+	for name, _ := range statuses {
+		if name != inputName {
+			topicStatus[name] = nil
+		} else {
+			topicStatus[name] = statuses[name]
+		}
+	}
+	return topicStatus
+}
+
+func (t *TriggerManager) reset(topic string, input string) {
 	t.TopicInputMap.Store(topic, &InputStatus{LastMsgTime: 0, LastEvent: nil, Status: false, Name: input})
 }
 
-func (t *TriggerMgr) getInputStatuses() map[string]interface{} {
+func (t *TriggerManager) getInputStatuses() map[string]interface{} {
 	statuses := map[string]interface{}{}
 	t.TopicInputMap.Range(func(k, v interface{}) bool {
 		if input, ok := v.(*InputStatus); ok {
@@ -272,14 +284,25 @@ func (t *TriggerMgr) getInputStatuses() map[string]interface{} {
 	return statuses
 }
 
-func (t *TriggerMgr) execCondition() []*Subscriber {
+func (t *TriggerManager) execCondition(inputName string) []*Subscriber {
 	var matchSubscribers []*Subscriber
+	var topicOut ref.Val
+	var out ref.Val
+	var err error
 	t.ConditionSubscriberMap.Range(func(k, v interface{}) bool {
 		ast := compile(t.CelEnv, k.(string), decls.Bool)
 		program, _ := t.CelEnv.Program(ast)
-		inputStatuses := t.getInputStatuses()
-		out, _, _ := program.Eval(inputStatuses)
-		if isTrue(out) {
+		statuses := t.getInputStatuses()
+		topicStatus := t.getTopicOnlyStatus(statuses, inputName)
+		topicOut, _, err = program.Eval(topicStatus)
+		if err != nil {
+			topicOut = types.Bool(topicStatus[inputName].(bool))
+		}
+		out, _, err = program.Eval(statuses)
+		if err != nil || out == types.Int(0) {
+			out = types.False
+		}
+		if isTrue(out) && isTrue(topicOut) {
 			if subscriber, ok := v.(*Subscriber); ok {
 				matchSubscribers = append(matchSubscribers, subscriber)
 			}
@@ -289,14 +312,14 @@ func (t *TriggerMgr) execCondition() []*Subscriber {
 	return matchSubscribers
 }
 
-func (t *TriggerMgr) execTrigger(event *common.TopicEvent, subscribers []*Subscriber) {
+func (t *TriggerManager) execTrigger(event *common.TopicEvent, subscribers []*Subscriber) {
 	ctx := context.Background()
 	for _, subscriber := range subscribers {
 		trigger(ctx, event, subscriber)
 	}
 }
 
-func (t *TriggerMgr) init() {
+func (t *TriggerManager) init() {
 	t.TopicInputMap = &sync.Map{}
 	t.TopicEventMap = map[string]chan *common.TopicEvent{}
 	t.ConditionSubscriberMap = &sync.Map{}

@@ -13,3 +13,5 @@ spec:
       # below are subscription configuration.
     - name: subscriptionType
       value: queue
+    - name: consumerID
+      value: trigger

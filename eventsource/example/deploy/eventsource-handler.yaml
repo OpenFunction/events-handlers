@@ -26,4 +26,4 @@ spec:
           imagePullPolicy: IfNotPresent
           env:
             - name: CONFIG
-              value: "eyJldmVudFNvdXJjZUNvbXBvbmVudE5hbWUiOiJrYWZrYS1ldmVudHNvdXJjZSIsImV2ZW50QnVzQ29tcG9uZW50TmFtZSI6Im5hdHMtZXZlbnRidXMiLCJldmVudEJ1c1RvcGljIjoidG9waWMxIiwic2lua0NvbXBvbmVudE5hbWUiOiJodHRwLXNpbmsifQ=="
+              value: "eyJldmVudFNvdXJjZUNvbXBvbmVudCI6ImthZmthLWV2ZW50c291cmNlIiwiZXZlbnRCdXNDb21wb25lbnQiOiJuYXRzLWV2ZW50YnVzIiwiZXZlbnRCdXNUb3BpYyI6InRvcGljMSIsInNpbmtDb21wb25lbnQiOiJodHRwLXNpbmsifQ=="

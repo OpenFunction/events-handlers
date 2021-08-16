@@ -7,10 +7,10 @@ import (
 )
 
 type TriggerEnvConfig struct {
-	BusComponent string                 `json:"busComponent"`
-	Inputs       []*Input               `json:"busTopic,omitempty"`
-	Subscribers  map[string]*Subscriber `json:"subscribers,omitempty"`
-	Port         string                 `json:"port,omitempty"`
+	EventBusComponent string                 `json:"eventBusComponent"`
+	Inputs            []*Input               `json:"inputs,omitempty"`
+	Subscribers       map[string]*Subscriber `json:"subscribers,omitempty"`
+	Port              string                 `json:"port,omitempty"`
 }
 
 type Input struct {
@@ -30,7 +30,7 @@ type Subscriber struct {
 func main() {
 	t := &TriggerEnvConfig{}
 	t.Subscribers = map[string]*Subscriber{}
-	t.BusComponent = "trigger"
+	t.EventBusComponent = "nats-eventbus"
 	t.Port = "5050"
 
 	inputA := &Input{
@@ -54,7 +54,7 @@ func main() {
 	subB := &Subscriber{}
 	subB.Topic = "metrics"
 
-	t.Subscribers["A || B"] = subA
+	t.Subscribers["B"] = subA
 	t.Subscribers["A && B"] = subB
 
 	tBytes, err := json.Marshal(t)

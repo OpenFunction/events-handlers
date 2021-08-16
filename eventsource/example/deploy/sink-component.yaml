@@ -8,4 +8,4 @@ spec:
   metadata:
     - name: url
       # This is the access address of a Knative Service
-      value: http://function-sample-serving-ksvc.default.192.168.0.5.sslip.io
+      value: http://function-sample-serving-qrdx8-ksvc-fwml8.default.192.168.0.5.sslip.io
