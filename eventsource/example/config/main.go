@@ -7,19 +7,19 @@ import (
 )
 
 type EventSourceConfig struct {
-	EventSourceComponentName string `json:"eventSourceComponentName"`
-	EventSourceTopic         string `json:"eventSourceTopic,omitempty"`
-	EventBusComponentName    string `json:"eventBusComponentName,omitempty"`
-	EventBusTopic            string `json:"eventBusTopic,omitempty"`
-	SinkComponentName        string `json:"sinkComponentName,omitempty"`
+	EventSourceComponent string `json:"eventSourceComponent"`
+	EventSourceTopic     string `json:"eventSourceTopic,omitempty"`
+	EventBusComponent    string `json:"eventBusComponent,omitempty"`
+	EventBusTopic        string `json:"eventBusTopic,omitempty"`
+	SinkComponent        string `json:"sinkComponent,omitempty"`
 }
 
 func main() {
 	ec := &EventSourceConfig{}
-	ec.SinkComponentName = "http-sink"
-	ec.EventBusComponentName = "nats-eventbus"
+	ec.SinkComponent = "http-sink"
+	ec.EventBusComponent = "nats-eventbus"
 	ec.EventBusTopic = "topic1"
-	ec.EventSourceComponentName = "kafka-eventsource"
+	ec.EventSourceComponent = "kafka-eventsource"
 
 	ecBytes, err := json.Marshal(ec)
 	if err != nil {

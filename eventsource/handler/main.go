@@ -20,12 +20,12 @@ var (
 )
 
 type EventSourceConfig struct {
-	EventSourceComponentName string `json:"eventSourceComponentName"`
-	EventSourceTopic         string `json:"eventSourceTopic,omitempty"`
-	EventBusComponentName    string `json:"eventBusComponentName,omitempty"`
-	EventBusTopic            string `json:"eventBusTopic,omitempty"`
-	SinkComponentName        string `json:"sinkComponentName,omitempty"`
-	Port                     string `json:"port,omitempty"`
+	EventSourceComponent string `json:"eventSourceComponent"`
+	EventSourceTopic     string `json:"eventSourceTopic,omitempty"`
+	EventBusComponent    string `json:"eventBusComponent,omitempty"`
+	EventBusTopic        string `json:"eventBusTopic,omitempty"`
+	SinkComponent        string `json:"sinkComponent,omitempty"`
+	Port                 string `json:"port,omitempty"`
 }
 
 func init() {
@@ -40,7 +40,7 @@ func init() {
 		}
 	}
 
-	if config.EventSourceComponentName == "" {
+	if config.EventSourceComponent == "" {
 		log.Fatal("event source cannot be none")
 	}
 
@@ -66,7 +66,7 @@ func main() {
 	sub := &common.Subscription{}
 	if config.EventSourceTopic != "" {
 		// add some topic subscriptions
-		sub.PubsubName = config.EventSourceComponentName
+		sub.PubsubName = config.EventSourceComponent
 		sub.Topic = config.EventSourceTopic
 
 		// add a binding invocation handler
@@ -75,7 +75,7 @@ func main() {
 		}
 	} else {
 		// add a binding invocation handler
-		if err = s.AddBindingInvocationHandler(config.EventSourceComponentName, eventSourceBindingsHandler); err != nil {
+		if err = s.AddBindingInvocationHandler(config.EventSourceComponent, eventSourceBindingsHandler); err != nil {
 			log.Fatalf("error adding binding handler: %v", err)
 		}
 	}
@@ -94,10 +94,10 @@ func eventSourceBindingsHandler(ctx context.Context, in *common.BindingEvent) ([
 	}
 
 	var ret []byte
-	if config.SinkComponentName != "" {
+	if config.SinkComponent != "" {
 		// send the input data to sink
 		msg := &dapr.InvokeBindingRequest{
-			Name:      config.SinkComponentName,
+			Name:      config.SinkComponent,
 			Operation: "create",
 			Data:      in.Data,
 			Metadata:  in.Metadata,
@@ -112,11 +112,11 @@ func eventSourceBindingsHandler(ctx context.Context, in *common.BindingEvent) ([
 		ret = response.Data
 	}
 
-	if config.EventBusComponentName != "" {
-		if err := client.PublishEvent(ctx, config.EventBusComponentName, config.EventBusTopic, in.Data); err != nil {
+	if config.EventBusComponent != "" {
+		if err := client.PublishEvent(ctx, config.EventBusComponent, config.EventBusTopic, in.Data); err != nil {
 			panic(err)
 		}
-		log.Printf("eventsource - Send to EventBus - PubsubName: %s, Topic: %s, Data: %s", config.EventBusComponentName, config.EventBusTopic, in.Data)
+		log.Printf("eventsource - Send to EventBus - PubsubName: %s, Topic: %s, Data: %s", config.EventBusComponent, config.EventBusTopic, in.Data)
 	}
 	return ret, nil
 }
@@ -128,10 +128,10 @@ func eventSourceTopicHandler(ctx context.Context, e *common.TopicEvent) (retry b
 		log.Fatal("client is not available")
 	}
 
-	if config.SinkComponentName != "" {
+	if config.SinkComponent != "" {
 		// send the input data to sink
 		msg := &dapr.InvokeBindingRequest{
-			Name:      config.SinkComponentName,
+			Name:      config.SinkComponent,
 			Operation: "create",
 			Data:      e.Data.([]byte),
 		}
@@ -145,11 +145,11 @@ func eventSourceTopicHandler(ctx context.Context, e *common.TopicEvent) (retry b
 		return false, nil
 	}
 
-	if config.EventBusComponentName != "" {
-		if err := client.PublishEventfromCustomContent(ctx, config.EventBusComponentName, config.EventBusTopic, e.Data); err != nil {
+	if config.EventBusComponent != "" {
+		if err := client.PublishEventfromCustomContent(ctx, config.EventBusComponent, config.EventBusTopic, e.Data); err != nil {
 			panic(err)
 		}
-		log.Printf("eventsource - Send to EventBus - PubsubName: %s, Topic: %s, Data: %s", config.EventBusComponentName, config.EventBusTopic, e.Data)
+		log.Printf("eventsource - Send to EventBus - PubsubName: %s, Topic: %s, Data: %s", config.EventBusComponent, config.EventBusTopic, e.Data)
 	}
 	return false, nil
 }
