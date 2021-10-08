@@ -61,13 +61,12 @@ func EventSourceHandler(ctx *ofctx.OpenFunctionContext, in []byte) ofctx.RetValu
 	var err error
 	if config.EventBusOutputName != "" {
 		_, err = ctx.Send(config.EventBusOutputName, in)
-		log.Error(err)
 	}
 	if config.SinkOutputName != "" {
 		_, err = ctx.Send(config.SinkOutputName, in)
-		log.Error(err)
 	}
 	if err != nil {
+		log.Error(err)
 		panic(err)
 	}
 

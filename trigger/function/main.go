@@ -174,6 +174,7 @@ func trigger(ctx context.Context, e *common.TopicEvent, sub *Subscriber) {
 		log.Debugf("trigger - Send to Sink - ID: %s", e.ID)
 		response, err := funcContext.Send(sub.SinkOutputName, e.Data.([]byte))
 		if err != nil {
+			log.Error(err)
 			panic(err)
 		}
 		log.Debugf("trigger - Response - Data: %s", response)
@@ -181,6 +182,7 @@ func trigger(ctx context.Context, e *common.TopicEvent, sub *Subscriber) {
 	if sub.EventBusOutputName != "" {
 		_, err := funcContext.Send(sub.EventBusOutputName, e.Data.([]byte))
 		if err != nil {
+			log.Error(err)
 			panic(err)
 		}
 		log.Debugf("trigger - Send to EventBus (filtered topic) - ID: %s", e.ID)
