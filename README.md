@@ -1,23 +1,23 @@
-# OpenFunction events handlers
+# OpenFunction Events Handlers
 
-This repo is used to store the code for the events handlers in the OpenFunction event framework.
+This repository is used to store the code for events handlers in the OpenFunction event framework.
 
-We provide two types of event handlers, one for events fetched from the event source (eventsource handler) and one for events fetched from the event bus (trigger handler).
+We provide two types of events handlers, one for events fetched from the event source (eventsource handler) and one for events fetched from the event bus (trigger handler).
 
-The reason for making event handlers standalone repo's is that they can be made to work as OpenFunction functions.
+The purpose of putting event handlers in a standalone repository is to make them work as OpenFunction functions.
 
 ## EventSource Handler
 
-You can refer to [this docs](https://github.com/OpenFunction/OpenFunction/blob/main/docs/concepts/OpenFunction-events-framework.md#eventsource) to learn more about **EventSource**.
+To learn more about **EventSource**, refer to [this document](https://github.com/OpenFunction/OpenFunction/blob/main/docs/concepts/OpenFunction-events-framework.md#eventsource).
 
-If you want to know how to use this handler, please refer to [this docs](eventsource) .
+To learn how to use this handler, refer to [this document](eventsource).
 
-- latest image: openfunctiondev/eventsource-handler:v1
+- Latest image: openfunctiondev/eventsource-handler:v1
 
 ## Trigger Handler
 
-You can refer to [this docs](https://github.com/OpenFunction/OpenFunction/blob/main/docs/concepts/OpenFunction-events-framework.md#trigger) to learn more about **Trigger**.
+To learn more about **Trigger**, refer to [this document](https://github.com/OpenFunction/OpenFunction/blob/main/docs/concepts/OpenFunction-events-framework.md#trigger).
 
-If you want to know how to use this handler, please refer to [this docs](trigger) .
+To learn know how to use this handler, refer to [this document](trigger).
 
-- latest image: openfunctiondev/trigger-handler:v1
+- Latest image: openfunctiondev/trigger-handler:v1
