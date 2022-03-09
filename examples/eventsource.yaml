@@ -1,0 +1,68 @@
+apiVersion: core.openfunction.io/v1beta1
+kind: Function
+metadata:
+  name: my-eventsource
+spec:
+  version: "v3.0.0"
+  port: 8080
+  image: "openfunction/eventsource-handler:latest"
+#  imageCredentials:
+#    name: push-secret
+#  build:
+#    builder: openfunction/builder-go:latest
+#    env:
+#      FUNC_NAME: "EventSourceHandler"
+#      FUNC_CLEAR_SOURCE: "true"
+#    srcRepo:
+#      url: "https://github.com/OpenFunction/events-handlers.git"
+#      sourceSubPath: "eventsource/function/v3"
+  serving:
+    bindings:
+      esc-kafka-sample-one:
+        metadata:
+          - name: brokers
+            value: "kafka-server-kafka-brokers.default.svc.cluster.local:9092"
+          - name: publishTopic
+            value: "demo"
+          - name: topics
+            value: "demo"
+          - name: authRequired
+            value: false
+          - name: consumerGroup
+            value: default-esc-kafka-sample-one
+        type: bindings.kafka
+        version: v1
+      ts-my-eventsource-default:
+        metadata:
+          - name: url
+            value: "http://openfunction.io.svc.cluster.local/default/sink-a"
+        type: bindings.http
+        version: v1
+    inputs:
+      - component: esc-kafka-sample-one
+        name: esi-sample-one
+    outputs:
+      - component: ts-my-eventsource-default
+        name: so-es-my-eventsource-1
+        operation: post
+      - component: ebfes-my-eventsource
+        name: ebo-my-eventsource
+        topic: default-my-eventsource-sample-one
+    params:
+      CONFIG: eyJldmVudEJ1c0NvbXBvbmVudCI6ImViZmVzLW15LWV2ZW50c291cmNlIiwiZXZlbnRCdXNPdXRwdXROYW1lIjoiZWJvLW15LWV2ZW50c291cmNlIiwiZXZlbnRCdXNUb3BpYyI6ImRlZmF1bHQtbXktZXZlbnRzb3VyY2Utc2FtcGxlLW9uZSIsInNpbmtPdXRwdXROYW1lIjoic28tZXMtbXktZXZlbnRzb3VyY2UtMSIsImxvZ0xldmVsIjoiMiJ9
+    pubsub:
+      ebfes-my-eventsource:
+        metadata:
+          - name: natsStreamingClusterID
+            value: "stan"
+          - name: subscriptionType
+            value: "queue"
+          - name: durableSubscriptionName
+            value: "ImDurable"
+          - name: consumerID
+            value: "default-ebfes-my-eventsource"
+          - name: natsURL
+            value: "nats://nats.default:4222"
+        type: pubsub.natsstreaming
+        version: v1
+    runtime: async

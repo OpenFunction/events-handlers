@@ -1,0 +1,29 @@
+apiVersion: core.openfunction.io/v1beta1
+kind: Function
+metadata:
+  name: sink-a
+spec:
+  version: "v1.0.0"
+  image: "openfunction/sink-sample:latest"
+  port: 8080
+  serving:
+    runtime: "knative"
+    template:
+      containers:
+        - name: function
+          imagePullPolicy: Always
+---
+apiVersion: core.openfunction.io/v1beta1
+kind: Function
+metadata:
+  name: sink-b
+spec:
+  version: "v1.0.0"
+  image: "openfunction/sink-sample:latest"
+  port: 8080
+  serving:
+    runtime: "knative"
+    template:
+      containers:
+        - name: function
+          imagePullPolicy: Always
