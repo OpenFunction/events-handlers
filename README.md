@@ -10,14 +10,14 @@ The purpose of putting event handlers in a standalone repository is to make them
 
 To learn more about **EventSource**, refer to [this document](https://github.com/OpenFunction/OpenFunction/blob/main/docs/concepts/OpenFunction-events-framework.md#eventsource).
 
-To learn how to use this handler, refer to [this document](eventsource).
-
-- Latest image: openfunctiondev/eventsource-handler:v1
+- Latest image: openfunction/eventsource-handler:v3
 
 ## Trigger Handler
 
 To learn more about **Trigger**, refer to [this document](https://github.com/OpenFunction/OpenFunction/blob/main/docs/concepts/OpenFunction-events-framework.md#trigger).
 
-To learn know how to use this handler, refer to [this document](trigger).
+- Latest image: openfunction/trigger-handler:v3
 
-- Latest image: openfunctiondev/trigger-handler:v1
+## Walkthrough
+
+Please refer to the [documents](Documents.md) to help you perform a walkthrough on events-framework.

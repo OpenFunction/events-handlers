@@ -1,0 +1,52 @@
+apiVersion: core.openfunction.io/v1beta1
+kind: Function
+metadata:
+  name: my-trigger
+spec:
+  version: "v3.0.0"
+  port: 8080
+  image: "openfunction/trigger-handler:latest"
+#  imageCredentials:
+#    name: push-secret
+#  build:
+#    builder: openfunction/builder-go:latest
+#    env:
+#      FUNC_NAME: "TriggerHandler"
+#      FUNC_CLEAR_SOURCE: "true"
+#    srcRepo:
+#      url: "https://github.com/OpenFunction/events-handlers.git"
+#      sourceSubPath: "trigger/function/v3"
+  serving:
+    bindings:
+      ts-my-trigger-default:
+        metadata:
+          - name: url
+            value: "http://openfunction.io.svc.cluster.local/default/sink-b"
+        type: bindings.http
+        version: v1
+    inputs:
+      - component: ebft-my-trigger
+        name: ti-default-my-eventsource-sample-one
+        topic: default-my-eventsource-sample-one
+    outputs:
+      - component: ts-my-trigger-default
+        name: so-t-my-trigger-1
+        operation: post
+    params:
+      CONFIG: eyJldmVudEJ1c0NvbXBvbmVudCI6ImViZnQtbXktdHJpZ2dlciIsImlucHV0cyI6W3sibmFtZSI6ImlucHV0RGVtbyIsIm5hbWVzcGFjZSI6ImRlZmF1bHQiLCJldmVudFNvdXJjZSI6Im15LWV2ZW50c291cmNlIiwiZXZlbnQiOiJzYW1wbGUtb25lIn1dLCJzdWJzY3JpYmVycyI6eyJpbnB1dERlbW8iOnsic2lua091dHB1dE5hbWUiOiJzby10LW15LXRyaWdnZXItMSJ9fSwibG9nTGV2ZWwiOiIyIn0=
+    pubsub:
+      ebft-my-trigger:
+        metadata:
+          - name: subscriptionType
+            value: "queue"
+          - name: durableSubscriptionName
+            value: "ImDurable"
+          - name: consumerID
+            value: "default-ebft-my-trigger"
+          - name: natsURL
+            value: "nats://nats.default:4222"
+          - name: natsStreamingClusterID
+            value: "stan"
+        type: pubsub.natsstreaming
+        version: v1
+    runtime: async

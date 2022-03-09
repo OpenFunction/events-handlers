@@ -1,0 +1,18 @@
+apiVersion: core.openfunction.io/v1beta1
+kind: Function
+metadata:
+  name: eventsource-handler
+spec:
+  version: "v3.0.0"
+  image: "openfunction/eventsource-handler:v3"
+  imageCredentials:
+    name: push-secret
+  port: 8080
+  build:
+    builder: openfunction/builder-go:v2-1.16
+    env:
+      FUNC_NAME: "EventSourceHandler"
+      FUNC_CLEAR_SOURCE: "true"
+    srcRepo:
+      url: "https://github.com/OpenFunction/events-handlers.git"
+      sourceSubPath: "eventsource/function/v3"
