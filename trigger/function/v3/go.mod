@@ -3,7 +3,7 @@ module openfunction.io/trigger
 go 1.16
 
 require (
-	github.com/OpenFunction/functions-framework-go v0.2.0
+	github.com/OpenFunction/functions-framework-go v0.2.1
 	github.com/cloudevents/sdk-go/v2 v2.4.1
 	github.com/dapr/go-sdk v1.3.1
 	github.com/google/cel-go v0.9.0
