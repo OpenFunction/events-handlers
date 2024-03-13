@@ -9,5 +9,5 @@ require (
 	github.com/google/cel-go v0.7.3
 	github.com/sirupsen/logrus v1.8.1
 	google.golang.org/genproto v0.0.0-20201204160425-06b3db808446
-	google.golang.org/protobuf v1.25.0
+	google.golang.org/protobuf v1.33.0
 )
